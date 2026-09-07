@@ -1,0 +1,263 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Aataki - Fresh Atta Ground Only After You Order</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=Playfair+Display:ital,wght@0,400;0,600;0,700;1,600&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+    <header>
+        <div class="logo-container">
+            <svg width="30" height="30" viewBox="0 0 24 24" fill="none" stroke="#c29a5b" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"></circle><circle cx="12" cy="12" r="4"></circle><line x1="12" y1="2" x2="12" y2="4"></line><line x1="12" y1="20" x2="12" y2="22"></line><line x1="22" y1="12" x2="20" y2="12"></line><line x1="4" y1="12" x2="2" y2="12"></line></svg>
+            <a href="#" class="logo">AATAKI</a>
+        </div>
+        <nav>
+            <a href="#range">Our Range</a>
+            <a href="#why">Why Aataki</a>
+            <a href="#how">How It Works</a>
+            <a href="#reviews">Reviews</a>
+        </nav>
+        <button class="nav-btn" onclick="toggleCheckout()">
+            Your Order <span id="cart-count">0</span>
+        </button>
+    </header>
+
+    <section class="hero">
+        <div class="hero-content">
+            <p class="hero-subtitle"> FRESH FLOUR &bull; INDIA</p>
+            <h1>Fresh atta, ground only <span class="highlight">after</span><br>you order.</h1>
+            <div class="hero-actions">
+                <a href="#range" class="btn-primary">Order Fresh Atta</a>
+                <a href="#why" class="btn-secondary">Why It Matters</a>
+            </div>
+            <div class="hero-checklist">
+                <span>&#10003; Zero preservatives</span> &bull; 
+                <span>&#10003; Delivered the Fastest</span> &bull; 
+                <span>&#10003; &#8377;36/kg onwards</span>
+            </div>
+        </div>
+    </section>
+
+    <section class="products-section" id="range">
+        <div class="products-container">
+            <div class="products" id="product-list">
+                <!-- Products injected by JS -->
+            </div>
+        </div>
+    </section>
+
+    <section class="promises-section" id="why">
+        <h2 class="section-title">Six promises in every pack.</h2>
+        <div class="promises-grid">
+            <div class="promise-card">
+                <div class="icon-circle"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M12 2v20M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"></path></svg></div>
+                <h3>Stone-ground freshness</h3>
+                <p>Ground only after you order &mdash; never off a shelf.</p>
+            </div>
+            <div class="promise-card">
+                <div class="icon-circle"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M12 22v-7l-2.2-2.2a3 3 0 0 1-.8-2.1V7h6v3.7c0 .8-.3 1.5-.8 2.1L12 15"></path><path d="M8 2h8"></path></svg></div>
+                <h3>Finest Sehore wheat</h3>
+                <p>Hand-selected premium wheat, naturally sweet.</p>
+            </div>
+            <div class="promise-card">
+                <div class="icon-circle"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M12 2.69l5.66 5.66a8 8 0 1 1-11.31 0z"></path></svg></div>
+                <h3>Retains natural moisture</h3>
+                <p>Keeps natural moisture for softer, fluffier rotis.</p>
+            </div>
+            <div class="promise-card">
+                <div class="icon-circle"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M12 21a9 9 0 0 0 9-9H3a9 9 0 0 0 9 9z"></path><path d="M12 12V3"></path></svg></div>
+                <h3>100% zero preservatives</h3>
+                <p>Pure & chemical-free. Nothing added, nothing removed.</p>
+            </div>
+            <div class="promise-card">
+                <div class="icon-circle"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><circle cx="12" cy="12" r="10"></circle><polyline points="12 6 12 12 16 14"></polyline></svg></div>
+                <h3>Delivered the Fastest</h3>
+                <p>From chakki to your door.</p>
+            </div>
+            <div class="promise-card">
+                <div class="icon-circle"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"></path></svg></div>
+                <h3>Made with care</h3>
+                <p>Made traditionally &mdash; the atta we'd serve our own family.</p>
+            </div>
+        </div>
+    </section>
+
+    <!-- How It Works Section (WITH ANIMATION) -->
+    <section class="how-it-works" id="how">
+        <h2 class="section-title">Ground the moment you order</h2>
+        <p class="section-subtitle">Stone-ground on our chakki &mdash; poured fresh, never stored.</p>
+        
+        <div class="animation-container">
+            <svg width="400" height="400" viewBox="0 0 400 400" xmlns="http://www.w3.org/2000/svg">
+                <!-- Drop shadow -->
+                <ellipse cx="200" cy="370" rx="90" ry="15" fill="rgba(0,0,0,0.05)"/>
+                
+                <!-- Bowl -->
+                <ellipse cx="200" cy="320" rx="80" ry="25" fill="#1b2a1e" stroke="#c29a5b" stroke-width="2"/>
+                <path d="M 120 320 A 80 50 0 0 0 280 320 Z" fill="#1b2a1e"/>
+                <!-- Flour mound inside bowl -->
+                <path d="M 140 320 Q 200 290 260 320 Z" fill="#f4ebd9"/>
+
+                <!-- Falling Flour Particles -->
+                <g class="flour-group">
+                    <circle cx="200" cy="240" r="2.5" fill="#fff" class="flour f1"/>
+                    <circle cx="190" cy="250" r="2" fill="#fff" class="flour f2"/>
+                    <circle cx="210" cy="260" r="3" fill="#fff" class="flour f3"/>
+                    <circle cx="195" cy="270" r="2" fill="#fff" class="flour f4"/>
+                    <circle cx="205" cy="280" r="2.5" fill="#fff" class="flour f5"/>
+                    <circle cx="200" cy="290" r="2" fill="#fff" class="flour f6"/>
+                </g>
+
+                <!-- Bottom Stone (Stationary) -->
+                <path d="M 110 190 L 110 230 A 90 25 0 0 0 290 230 L 290 190 Z" fill="#7a7873"/>
+                <ellipse cx="200" cy="190" rx="90" ry="25" fill="#8c8a85"/>
+                <!-- Spout -->
+                <path d="M 180 230 L 220 230 L 205 250 L 195 250 Z" fill="#5c5b58"/>
+
+                <!-- Top Stone (Vibrating) -->
+                <g class="top-stone">
+                    <path d="M 110 140 L 110 190 A 90 25 0 0 0 290 190 L 290 140 Z" fill="#9e9c97"/>
+                    <ellipse cx="200" cy="140" rx="90" ry="25" fill="#b0aeaa"/>
+                    <!-- Center Hole -->
+                    <ellipse cx="200" cy="140" rx="20" ry="7" fill="#3a3937"/>
+                    
+                    <!-- Handle (Moving back and forth) -->
+                    <g class="grinder-handle">
+                        <!-- Shadow on stone -->
+                        <rect x="235" y="140" width="24" height="5" rx="2" fill="rgba(0,0,0,0.1)"/>
+                        <!-- Wooden Peg -->
+                        <rect x="240" y="80" width="14" height="65" rx="7" fill="#a07845"/>
+                        <ellipse cx="247" cy="80" rx="7" ry="3" fill="#c29a5b"/>
+                    </g>
+                </g>
+
+                <!-- Wheat grains falling into center hole -->
+                <g class="wheat-group">
+                    <ellipse cx="200" cy="60" rx="4" ry="7" fill="#d4b872" class="wheat w1"/>
+                    <ellipse cx="190" cy="40" rx="4" ry="7" fill="#d4b872" class="wheat w2"/>
+                    <ellipse cx="210" cy="80" rx="4" ry="7" fill="#d4b872" class="wheat w3"/>
+                </g>
+            </svg>
+        </div>
+
+        <div class="steps-grid">
+            <div class="step">
+                <div class="step-num">1</div>
+                <h3>You Order</h3>
+                <p>Place your order online and customize your quantity.</p>
+            </div>
+            <div class="step">
+                <div class="step-num">2</div>
+                <h3>We Grind</h3>
+                <p>We stone-grind the finest wheat just for your order.</p>
+            </div>
+            <div class="step">
+                <div class="step-num">3</div>
+                <h3>We Deliver</h3>
+                <p>Freshly milled atta reaches your door within 24 hours.</p>
+            </div>
+        </div>
+    </section>
+
+    <!-- Reviews Section -->
+    <section class="reviews-section" id="reviews">
+        <h2 class="section-title">What Our Customers Say</h2>
+        <div class="reviews-grid">
+            <div class="review-card">
+                <div class="stars">&starf;&starf;&starf;&starf;&starf;</div>
+                <p>"The rotis are incredibly soft. You can really taste the freshness compared to store-bought packaged atta."</p>
+                <h4>- Priya S.</h4>
+            </div>
+            <div class="review-card">
+                <div class="stars">&starf;&starf;&starf;&starf;&starf;</div>
+                <p>"Love the zero preservatives promise. Have been ordering the Sharbati variant every month!"</p>
+                <h4>- Rahul M.</h4>
+            </div>
+            <div class="review-card">
+                <div class="stars">&starf;&starf;&starf;&starf;&starf;</div>
+                <p>"Perfect texture and delivered exactly on time. Highly recommend to everyone in Bhopal."</p>
+                <h4>- Anjali K.</h4>
+            </div>
+        </div>
+    </section>
+
+    <!-- Checkout Sidebar & Modals -->
+    <div class="backdrop" id="backdrop" onclick="closeAllModals()"></div>
+    <div class="checkout-sidebar" id="checkout-sidebar">
+        <div class="checkout-header">
+            <h2>Your Order Summary</h2>
+            <button class="close-btn" onclick="toggleCheckout()">&times;</button>
+        </div>
+        <div class="cart-items" id="cart-items"></div>
+        <div class="checkout-footer">
+            <div class="total-row">
+                <span>Total Amount:</span>
+                <span id="cart-total">&#8377;0</span>
+            </div>
+            <button class="checkout-btn" id="checkout-btn" onclick="openPaymentModal()">Proceed to Payment</button>
+        </div>
+    </div>
+
+    <!-- Payment Details Modal -->
+    <div class="modal" id="payment-modal">
+        <div class="modal-header">
+            <h2>Secure Checkout</h2>
+            <button class="close-btn-modal" onclick="closeAllModals()">&times;</button>
+        </div>
+        <div class="modal-body">
+            <form id="payment-form" onsubmit="submitPayment(event)">
+                <div class="form-section">
+                    <h3>Delivery Details</h3>
+                    <div class="form-group">
+                        <label>Full Name</label>
+                        <input type="text" id="cust-name" required placeholder="John Doe">
+                    </div>
+                    <div class="form-group">
+                        <label>Phone Number</label>
+                        <input type="tel" id="cust-phone" required placeholder="+91 99999 99999">
+                    </div>
+                    <div class="form-group">
+                        <label>Delivery Address (Bhopal Only)</label>
+                        <textarea id="cust-address" required placeholder="House No, Street, Landmark" rows="3"></textarea>
+                    </div>
+                </div>
+                <div class="form-section">
+                    <h3>Payment details (Simulated)</h3>
+                    <div class="form-group">
+                        <label>Card Number</label>
+                        <input type="text" placeholder="XXXX XXXX XXXX XXXX" required>
+                    </div>
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label>Expiry Date</label>
+                            <input type="text" placeholder="MM/YY" required>
+                        </div>
+                        <div class="form-group">
+                            <label>CVV</label>
+                            <input type="password" placeholder="***" required maxlength="3">
+                        </div>
+                    </div>
+                </div>
+                <button type="submit" class="pay-btn" id="pay-btn">Pay <span id="pay-amount">&#8377;0</span></button>
+            </form>
+        </div>
+    </div>
+
+    <!-- Success Modal -->
+    <div class="modal" id="success-modal">
+        <div class="modal-body success-body">
+            <div class="success-icon">&#10004;</div>
+            <h2>Order Confirmed!</h2>
+            <p>Thank you for your purchase. We are preparing your fresh atta.</p>
+            <p class="order-id">Order ID: <span id="display-order-id">#12345</span></p>
+            <button class="pay-btn" onclick="closeAllModals()">Continue Shopping</button>
+        </div>
+    </div>
+
+    <script src="js/app.js"></script>
+</body>
+</html>
