@@ -1,0 +1,84 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Notifications | Aataki Admin</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Playfair+Display:wght@600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="/admin/css/admin.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+</head>
+<body>
+    <div class="admin-layout">
+        <aside class="sidebar" id="sidebar">
+            <div class="sidebar-header">
+                <h2>Aataki</h2>
+                <button class="close-sidebar" onclick="toggleSidebar()"><i class="fas fa-times"></i></button>
+            </div>
+        </aside>
+        
+        <div class="main-content">
+            <header class="topbar">
+                <div class="topbar-left">
+                    <button class="menu-toggle" onclick="toggleSidebar()"><i class="fas fa-bars"></i></button>
+                    <div class="breadcrumbs"><span>Admin / </span><strong>Notifications</strong></div>
+                </div>
+                <div class="topbar-right">
+                    <button onclick="toggleTheme()" class="icon-btn theme-toggle"><i class="fas fa-moon"></i></button>
+                    <div class="admin-profile">
+                        <span id="admin-name">Loading...</span>
+                        <button onclick="logout()" class="icon-btn"><i class="fas fa-sign-out-alt"></i></button>
+                    </div>
+                </div>
+            </header>
+            
+            <main class="page-content">
+                <div class="page-header">
+                    <h1 class="page-title">Notification Logs</h1>
+                </div>
+                <div class="card">
+                    <div class="table-responsive">
+                        <table>
+                            <thead>
+                                <tr><th>ID</th><th>Type</th><th>Recipient</th><th>Title</th><th>Status</th><th>Action</th></tr>
+                            </thead>
+                            <tbody id="notifications-tbody">
+                                <tr><td colspan="6">Loading notifications...</td></tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </main>
+        </div>
+    </div>
+    <div id="toast-container" class="toast-container"></div>
+    <script src="/admin/js/admin.js"></script>
+    <script>
+        async function loadNotifications() {
+            try {
+                const res = await api('GET', '/notifications');
+                const tbody = document.getElementById('notifications-tbody');
+                if (!res.data || res.data.length === 0) {
+                    tbody.innerHTML = '<tr><td colspan="6">No notifications found.</td></tr>';
+                    return;
+                }
+                tbody.innerHTML = res.data.map(n => `
+                    <tr>
+                        <td>${n.id}</td>
+                        <td><span class="badge badge-secondary">${n.type}</span></td>
+                        <td>${n.recipient_email || 'N/A'}</td>
+                        <td>${n.title}</td>
+                        <td><span class="badge ${n.status === 'SENT' ? 'badge-success' : 'badge-warning'}">${n.status}</span></td><td>${n.status === 'FAILED' ? `<button class="btn btn-secondary btn-sm" onclick="retryNotification(${n.id})">Retry</button>` : ''}${n.status === 'PENDING' ? `<button class="btn btn-danger btn-sm" onclick="cancelNotification(${n.id})">Cancel</button>` : ''}</td>
+                    </tr>
+                `).join('');
+            } catch (e) {
+                document.getElementById('notifications-tbody').innerHTML = '<tr><td colspan="6">Failed to load notifications.</td></tr>';
+                showToast(e.message, 'error');
+            }
+        }
+        async function retryNotification(id) { try { await api('POST', `/notifications/${id}/retry`); showToast('Notification queued.', 'success'); await loadNotifications(); } catch (error) { showToast(error.message, 'error'); } }
+        async function cancelNotification(id) { try { await api('POST', `/notifications/${id}/cancel`); showToast('Notification cancelled.', 'success'); await loadNotifications(); } catch (error) { showToast(error.message, 'error'); } }
+        document.addEventListener('DOMContentLoaded', loadNotifications);
+    </script>
+</body>
+</html>

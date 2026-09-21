@@ -20,8 +20,9 @@
             <a href="#why">Why Aataki</a>
             <a href="#how">How It Works</a>
             <a href="#reviews">Reviews</a>
+            <a href="/admin/login.html" style="margin-left: 20px; color: #c29a5b; font-weight: bold;">Admin</a>
         </nav>
-        <button class="nav-btn" onclick="toggleCheckout()">
+        <button class="nav-btn" id="cart-open-button" type="button">
             Your Order <span id="cart-count">0</span>
         </button>
     </header>
@@ -76,7 +77,7 @@
             <div class="promise-card">
                 <div class="icon-circle"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><circle cx="12" cy="12" r="10"></circle><polyline points="12 6 12 12 16 14"></polyline></svg></div>
                 <h3>Delivered the Fastest</h3>
-                <p>From chakki to your door.</p>
+                <p>From chakki to your door. Freshly milled and carefully packed for your kitchen.</p>
             </div>
             <div class="promise-card">
                 <div class="icon-circle"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"></path></svg></div>
@@ -185,12 +186,68 @@
         </div>
     </section>
 
+    <section class="contact-section" id="contact">
+        <div class="contact-copy">
+            <p class="hero-subtitle">WE ARE HERE TO HELP</p>
+            <h2 class="section-title">Contact Aataki</h2>
+            <p>Have a question about our atta, an order, or delivery? Send us a message and our team will get back to you.</p>
+        </div>
+        <form id="contact-form" class="contact-form">
+            <div class="form-row">
+                <div class="form-group"><label for="contact-name">Name</label><input id="contact-name" required></div>
+                <div class="form-group"><label for="contact-email">Email</label><input id="contact-email" type="email" required></div>
+            </div>
+            <div class="form-group"><label for="contact-phone">Phone</label><input id="contact-phone" type="tel"></div>
+            <div class="form-group"><label for="contact-message">Message</label><textarea id="contact-message" rows="5" minlength="10" required></textarea></div>
+            <button class="pay-btn" type="submit">Send Message</button>
+            <p id="contact-status" role="status"></p>
+        </form>
+    </section>
+
+    <section class="faq-section" id="faq">
+        <div class="faq-heading">
+            <p class="hero-subtitle">GOOD TO KNOW</p>
+            <h2 class="section-title">Frequently asked questions</h2>
+            <p>Everything you need to know about fresh grinding, delivery, and ordering from Aataki.</p>
+        </div>
+        <div class="faq-list">
+            <article class="faq-item">
+                <button class="faq-question" type="button" aria-expanded="false">When is the atta ground?<span>+</span></button>
+                <div class="faq-answer"><p>We grind your atta after the order is placed, then pack it fresh for delivery.</p></div>
+            </article>
+            <article class="faq-item">
+                <button class="faq-question" type="button" aria-expanded="false">Where do you deliver?<span>+</span></button>
+                <div class="faq-answer"><p>We deliver across India. Enter your complete address, city, state, and PIN code at checkout.</p></div>
+            </article>
+            <article class="faq-item">
+                <button class="faq-question" type="button" aria-expanded="false">How can I track my order?<span>+</span></button>
+                <div class="faq-answer"><p>Use the contact form below or reach out with your order ID and our team will help you.</p></div>
+            </article>
+            <article class="faq-item">
+                <button class="faq-question" type="button" aria-expanded="false">Are preservatives added?<span>+</span></button>
+                <div class="faq-answer"><p>No. Our flour is made from carefully selected grains without added preservatives.</p></div>
+            </article>
+        </div>
+    </section>
+
+    <footer class="site-footer">
+        <div class="footer-brand">
+            <a class="footer-logo" href="#">AATAKI</a>
+            <p>Fresh flour, stone-ground only after you order. Delivered fresh across India.</p>
+            <p class="footer-kicker">FOLLOW US</p>
+            <div class="footer-socials"><a href="#" aria-label="Aataki on Instagram">Instagram</a><a href="https://wa.me/919399948625" aria-label="Contact Aataki on WhatsApp">WhatsApp</a></div>
+        </div>
+        <div class="footer-column"><p class="footer-kicker">SHOP</p><a href="#range">Premium</a><a href="#range">Gold (Sharbati)</a><a href="#range">Classic</a><a href="#range">Regular</a></div>
+        <div class="footer-column"><p class="footer-kicker">LEARN</p><a href="#why">Why Aataki</a><a href="#how">How It Works</a><a href="#reviews">Our Story</a><a href="#contact">Contact</a></div>
+        <div class="footer-column"><p class="footer-kicker">CONTACT</p><a href="https://wa.me/919399948625">WhatsApp: +91 93999 48625</a><a href="mailto:aataki.india@gmail.com">aataki.india@gmail.com</a><span>India</span></div>
+    </footer>
+
     <!-- Checkout Sidebar & Modals -->
-    <div class="backdrop" id="backdrop" onclick="closeAllModals()"></div>
+    <div class="backdrop" id="backdrop"></div>
     <div class="checkout-sidebar" id="checkout-sidebar">
         <div class="checkout-header">
             <h2>Your Order Summary</h2>
-            <button class="close-btn" onclick="toggleCheckout()">&times;</button>
+            <button class="close-btn" id="cart-close-button" type="button">&times;</button>
         </div>
         <div class="cart-items" id="cart-items"></div>
         <div class="checkout-footer">
@@ -198,7 +255,7 @@
                 <span>Total Amount:</span>
                 <span id="cart-total">&#8377;0</span>
             </div>
-            <button class="checkout-btn" id="checkout-btn" onclick="openPaymentModal()">Proceed to Payment</button>
+            <button class="checkout-btn" id="checkout-btn" type="button">Proceed to Payment</button>
         </div>
     </div>
 
@@ -206,10 +263,10 @@
     <div class="modal" id="payment-modal">
         <div class="modal-header">
             <h2>Secure Checkout</h2>
-            <button class="close-btn-modal" onclick="closeAllModals()">&times;</button>
+            <button class="close-btn-modal" id="payment-close-button" type="button">&times;</button>
         </div>
         <div class="modal-body">
-            <form id="payment-form" onsubmit="submitPayment(event)">
+            <form id="payment-form">
                 <div class="form-section">
                     <h3>Delivery Details</h3>
                     <div class="form-group">
@@ -221,8 +278,12 @@
                         <input type="tel" id="cust-phone" required placeholder="+91 99999 99999">
                     </div>
                     <div class="form-group">
-                        <label>Delivery Address (Bhopal Only)</label>
-                        <textarea id="cust-address" required placeholder="House No, Street, Landmark" rows="3"></textarea>
+                        <label>Email Address</label>
+                        <input type="email" id="cust-email" placeholder="you@example.com">
+                    </div>
+                    <div class="form-group">
+                        <label>Delivery Address (India)</label>
+                        <textarea id="cust-address" required placeholder="House No, Street, City, State, PIN code" rows="3"></textarea>
                     </div>
                 </div>
                 <div class="form-section">
@@ -254,7 +315,7 @@
             <h2>Order Confirmed!</h2>
             <p>Thank you for your purchase. We are preparing your fresh atta.</p>
             <p class="order-id">Order ID: <span id="display-order-id">#12345</span></p>
-            <button class="pay-btn" onclick="closeAllModals()">Continue Shopping</button>
+            <button class="pay-btn" id="success-close-button" type="button">Continue Shopping</button>
         </div>
     </div>
 

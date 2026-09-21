@@ -1,0 +1,86 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Orders | Aataki Admin</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Playfair+Display:wght@600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="/admin/css/admin.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+</head>
+<body>
+    <div class="admin-layout">
+        <aside class="sidebar" id="sidebar">
+            <div class="sidebar-header">
+                <h2>Aataki</h2>
+                <button class="close-sidebar" onclick="toggleSidebar()"><i class="fas fa-times"></i></button>
+            </div>
+        </aside>
+        
+        <div class="main-content">
+            <header class="topbar">
+                <div class="topbar-left">
+                    <button class="menu-toggle" onclick="toggleSidebar()"><i class="fas fa-bars"></i></button>
+                    <div class="breadcrumbs"><span>Admin / </span><strong>Orders</strong></div>
+                </div>
+                <div class="topbar-right">
+                    <button onclick="toggleTheme()" class="icon-btn theme-toggle"><i class="fas fa-moon"></i></button>
+                    <div class="admin-profile">
+                        <span id="admin-name">Loading...</span>
+                        <button onclick="logout()" class="icon-btn"><i class="fas fa-sign-out-alt"></i></button>
+                    </div>
+                </div>
+            </header>
+            
+            <main class="page-content">
+                <div class="page-header">
+                    <h1 class="page-title">Order Management</h1>
+                </div>
+                <div class="card">
+                    <div class="table-responsive">
+                        <table>
+                            <thead>
+                                <tr><th>Order ID</th><th>Customer</th><th>Date</th><th>Amount</th><th>Payment</th><th>Status</th><th>Action</th></tr>
+                            </thead>
+                            <tbody id="orders-tbody">
+                                <tr><td colspan="7">Loading orders...</td></tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </main>
+        </div>
+    </div>
+    <div id="toast-container" class="toast-container"></div>
+    <script src="/admin/js/admin.js"></script>
+    <script>
+        let orders = [];
+        async function loadOrders() {
+            try {
+                const res = await api('GET', '/orders');
+                const tbody = document.getElementById('orders-tbody');
+                orders = res.data || [];
+                if (!orders.length) {
+                    tbody.innerHTML = '<tr><td colspan="7">No orders found.</td></tr>';
+                    return;
+                }
+                tbody.innerHTML = orders.map(o => `
+                    <tr>
+                        <td>#${o.order_id || o.id}</td>
+                        <td>${o.customer_name || 'Guest'}</td>
+                        <td>${formatDate(o.created_at)}</td>
+                        <td>${formatCurrency(o.total_amount)}</td>
+                        <td><span class="badge badge-info">${o.payment_status}</span></td>
+                        <td><span class="badge badge-success">${o.status}</span></td><td><select onchange="updateOrderStatus(${o.id}, this.value)"><option value="">Change status</option>${['pending','confirmed','processing','shipped','delivered','cancelled','refunded'].map(status => `<option value="${status}">${status}</option>`).join('')}</select></td>
+                    </tr>
+                `).join('');
+            } catch (e) {
+                document.getElementById('orders-tbody').innerHTML = '<tr><td colspan="7">Failed to load orders.</td></tr>';
+                showToast(e.message, 'error');
+            }
+        }
+        async function updateOrderStatus(id, status) { if (!status) { return; } try { await api('PUT', `/orders/${id}/status`, { status }); showToast('Order status updated.', 'success'); await loadOrders(); } catch (error) { showToast(error.message, 'error'); } }
+        document.addEventListener('DOMContentLoaded', loadOrders);
+    </script>
+</body>
+</html>

@@ -1,0 +1,83 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Settings | Aataki Admin</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Playfair+Display:wght@600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="/admin/css/admin.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+</head>
+<body>
+    <div class="admin-layout">
+        <aside class="sidebar" id="sidebar">
+            <div class="sidebar-header">
+                <h2>Aataki</h2>
+                <button class="close-sidebar" onclick="toggleSidebar()"><i class="fas fa-times"></i></button>
+            </div>
+        </aside>
+        
+        <div class="main-content">
+            <header class="topbar">
+                <div class="topbar-left">
+                    <button class="menu-toggle" onclick="toggleSidebar()"><i class="fas fa-bars"></i></button>
+                    <div class="breadcrumbs"><span>Admin / </span><strong>Settings</strong></div>
+                </div>
+                <div class="topbar-right">
+                    <button onclick="toggleTheme()" class="icon-btn theme-toggle"><i class="fas fa-moon"></i></button>
+                    <div class="admin-profile">
+                        <span id="admin-name">Loading...</span>
+                        <button onclick="logout()" class="icon-btn"><i class="fas fa-sign-out-alt"></i></button>
+                    </div>
+                </div>
+            </header>
+            
+            <main class="page-content">
+                <div class="page-header">
+                    <h1 class="page-title">Store & System Settings</h1>
+                    <button class="btn btn-primary" type="button" onclick="saveSettings()"><i class="fas fa-save"></i> Save Settings</button>
+                </div>
+                <div class="card">
+                    <h3>Configuration</h3>
+                    <div id="settings-container" style="margin-top: 1rem;">
+                        <p>Loading settings...</p>
+                    </div>
+                </div>
+            </main>
+        </div>
+    </div>
+    <div id="toast-container" class="toast-container"></div>
+    <script src="/admin/js/admin.js"></script>
+    <script>
+        async function loadSettings() {
+            try {
+                const res = await api('GET', '/settings');
+                const container = document.getElementById('settings-container');
+                if (!res.data || Object.keys(res.data).length === 0) {
+                    container.innerHTML = '<p>No settings configured.</p>';
+                    return;
+                }
+                let html = '';
+                for (const cat in res.data) {
+                    html += `<h4>${cat.toUpperCase()}</h4><div style="margin-bottom: 1rem;">`;
+                    res.data[cat].forEach(s => {
+                        html += `
+                            <div class="form-group">
+                                <label>${s.setting_key}</label>
+                                <input type="text" class="form-control setting-input" data-key="${s.setting_key}" value="${s.setting_value === '********' ? '' : s.setting_value}" ${s.setting_value === '********' ? 'placeholder="Hidden secret"' : ''}>
+                            </div>
+                        `;
+                    });
+                    html += `</div>`;
+                }
+                container.innerHTML = html;
+            } catch (e) {
+                document.getElementById('settings-container').innerHTML = '<p>Failed to load settings.</p>';
+                showToast(e.message, 'error');
+            }
+        }
+        async function saveSettings() { const settings = [...document.querySelectorAll('.setting-input')].filter(input => input.value !== '').map(input => ({ setting_key: input.dataset.key, setting_value: input.value })); try { await api('PUT', '/settings', { settings }); showToast('Settings saved.', 'success'); } catch (error) { showToast(error.message, 'error'); } }
+        document.addEventListener('DOMContentLoaded', loadSettings);
+    </script>
+</body>
+</html>

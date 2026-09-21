@@ -1,0 +1,79 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Reports | Aataki Admin</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Playfair+Display:wght@600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="/admin/css/admin.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+</head>
+<body>
+    <div class="admin-layout">
+        <aside class="sidebar" id="sidebar">
+            <div class="sidebar-header">
+                <h2>Aataki</h2>
+                <button class="close-sidebar" onclick="toggleSidebar()"><i class="fas fa-times"></i></button>
+            </div>
+        </aside>
+        
+        <div class="main-content">
+            <header class="topbar">
+                <div class="topbar-left">
+                    <button class="menu-toggle" onclick="toggleSidebar()"><i class="fas fa-bars"></i></button>
+                    <div class="breadcrumbs"><span>Admin / </span><strong>Reports</strong></div>
+                </div>
+                <div class="topbar-right">
+                    <button onclick="toggleTheme()" class="icon-btn theme-toggle"><i class="fas fa-moon"></i></button>
+                    <div class="admin-profile">
+                        <span id="admin-name">Loading...</span>
+                        <button onclick="logout()" class="icon-btn"><i class="fas fa-sign-out-alt"></i></button>
+                    </div>
+                </div>
+            </header>
+            
+            <main class="page-content">
+                <div class="page-header">
+                    <h1 class="page-title">Reports & Analytics</h1>
+                </div>
+                <div class="card">
+                    <h3>Sales Report</h3>
+                    <div class="table-responsive" style="margin-top: 1rem;">
+                        <table>
+                            <thead>
+                                <tr><th>Date</th><th>Orders</th><th>Revenue</th></tr>
+                            </thead>
+                            <tbody id="sales-report-tbody">
+                                <tr><td colspan="3">Loading report...</td></tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </main>
+        </div>
+    </div>
+    <div id="toast-container" class="toast-container"></div>
+    <script src="/admin/js/admin.js"></script>
+    <script>
+        document.addEventListener('DOMContentLoaded', async () => {
+            try {
+                const res = await api('GET', '/reports/sales');
+                const tbody = document.getElementById('sales-report-tbody');
+                if (!res.data || !res.data.rows || res.data.rows.length === 0) {
+                    tbody.innerHTML = '<tr><td colspan="3">No sales records found.</td></tr>';
+                    return;
+                }
+                tbody.innerHTML = res.data.rows.map(r => `
+                    <tr>
+                        <td>${r.date}</td>
+                        <td>${r.orders}</td>
+                        <td>${formatCurrency(r.revenue)}</td>
+                    </tr>
+                `).join('');
+            } catch (e) {
+                document.getElementById('sales-report-tbody').innerHTML = '<tr><td colspan="3">Failed to load report.</td></tr>';
+            }
+        });
+    </script>
+</body>
+</html>

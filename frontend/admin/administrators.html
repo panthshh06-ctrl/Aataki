@@ -1,0 +1,91 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Administrators | Aataki Admin</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Playfair+Display:wght@600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="/admin/css/admin.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+</head>
+<body>
+    <div class="admin-layout">
+        <aside class="sidebar" id="sidebar">
+            <div class="sidebar-header">
+                <h2>Aataki</h2>
+                <button class="close-sidebar" onclick="toggleSidebar()"><i class="fas fa-times"></i></button>
+            </div>
+        </aside>
+        
+        <div class="main-content">
+            <header class="topbar">
+                <div class="topbar-left">
+                    <button class="menu-toggle" onclick="toggleSidebar()"><i class="fas fa-bars"></i></button>
+                    <div class="breadcrumbs"><span>Admin / </span><strong>Administrators</strong></div>
+                </div>
+                <div class="topbar-right">
+                    <button onclick="toggleTheme()" class="icon-btn theme-toggle"><i class="fas fa-moon"></i></button>
+                    <div class="admin-profile">
+                        <span id="admin-name">Loading...</span>
+                        <button onclick="logout()" class="icon-btn"><i class="fas fa-sign-out-alt"></i></button>
+                    </div>
+                </div>
+            </header>
+            
+            <main class="page-content">
+                <div class="page-header">
+                    <h1 class="page-title">Administrator Accounts</h1>
+                    <button class="btn btn-primary" type="button" onclick="openAdminForm()"><i class="fas fa-plus"></i> Add Administrator</button>
+                </div>
+                <div class="card">
+                    <div class="table-responsive">
+                        <table>
+                            <thead>
+                                <tr><th>ID</th><th>Name</th><th>Email</th><th>Role</th><th>Status</th><th>Action</th></tr>
+                            </thead>
+                            <tbody id="admins-tbody">
+                                <tr><td colspan="6">Loading administrators...</td></tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </main>
+        </div>
+    </div>
+    <dialog id="admin-dialog"><form id="admin-form" method="dialog"><h2>Create Administrator</h2>
+        <label>Name <input id="admin-new-name" required></label><label>Email <input id="admin-new-email" type="email" required></label><label>Password <input id="admin-new-password" type="password" minlength="6" required></label>
+        <label>Role <select id="admin-new-role"><option value="STAFF">Staff</option><option value="ADMIN">Admin</option><option value="SUPER_ADMIN">Super Admin</option></select></label>
+        <div class="modal-footer"><button class="btn btn-secondary" type="button" onclick="document.getElementById('admin-dialog').close()">Cancel</button><button class="btn btn-primary" type="submit">Create</button></div>
+    </form></dialog>
+    <div id="toast-container" class="toast-container"></div>
+    <script src="/admin/js/admin.js"></script>
+    <script>
+        async function loadAdmins() {
+            try {
+                const res = await api('GET', '/administrators');
+                const tbody = document.getElementById('admins-tbody');
+                if (!res.data || res.data.length === 0) {
+                    tbody.innerHTML = '<tr><td colspan="6">No administrators found.</td></tr>';
+                    return;
+                }
+                tbody.innerHTML = res.data.map(a => `
+                    <tr>
+                        <td>${a.id}</td>
+                        <td><strong>${a.name}</strong></td>
+                        <td>${a.email}</td>
+                        <td><span class="badge badge-info">${a.role}</span></td>
+                        <td><span class="badge ${a.is_active ? 'badge-success' : 'badge-danger'}">${a.is_active ? 'Active' : 'Inactive'}</span></td><td><button class="btn btn-secondary btn-sm" onclick="toggleAdmin(${a.id}, ${a.is_active ? 0 : 1})">${a.is_active ? 'Deactivate' : 'Activate'}</button></td>
+                    </tr>
+                `).join('');
+            } catch (e) {
+                document.getElementById('admins-tbody').innerHTML = '<tr><td colspan="6">Failed to load administrators (Requires SUPER_ADMIN role).</td></tr>';
+                showToast(e.message, 'error');
+            }
+        }
+        function openAdminForm() { document.getElementById('admin-dialog').showModal(); }
+        document.getElementById('admin-form').addEventListener('submit', async event => { event.preventDefault(); try { await api('POST', '/administrators', { name: document.getElementById('admin-new-name').value.trim(), email: document.getElementById('admin-new-email').value.trim(), password: document.getElementById('admin-new-password').value, role: document.getElementById('admin-new-role').value }); document.getElementById('admin-dialog').close(); showToast('Administrator created.', 'success'); await loadAdmins(); } catch (error) { showToast(error.message, 'error'); } });
+        async function toggleAdmin(id, is_active) { try { await api('PUT', `/administrators/${id}`, { is_active }); showToast('Administrator updated.', 'success'); await loadAdmins(); } catch (error) { showToast(error.message, 'error'); } }
+        document.addEventListener('DOMContentLoaded', loadAdmins);
+    </script>
+</body>
+</html>

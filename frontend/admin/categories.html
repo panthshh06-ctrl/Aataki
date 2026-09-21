@@ -1,0 +1,127 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Categories | Aataki Admin</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Playfair+Display:wght@600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="/admin/css/admin.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+</head>
+<body>
+    <div class="admin-layout">
+        <aside class="sidebar" id="sidebar">
+            <div class="sidebar-header">
+                <h2>Aataki</h2>
+                <button class="close-sidebar" onclick="toggleSidebar()"><i class="fas fa-times"></i></button>
+            </div>
+        </aside>
+        
+        <div class="main-content">
+            <header class="topbar">
+                <div class="topbar-left">
+                    <button class="menu-toggle" onclick="toggleSidebar()"><i class="fas fa-bars"></i></button>
+                    <div class="breadcrumbs"><span>Admin / </span><strong>Categories</strong></div>
+                </div>
+                <div class="topbar-right">
+                    <button onclick="toggleTheme()" class="icon-btn theme-toggle"><i class="fas fa-moon"></i></button>
+                    <div class="admin-profile">
+                        <span id="admin-name">Loading...</span>
+                        <button onclick="logout()" class="icon-btn"><i class="fas fa-sign-out-alt"></i></button>
+                    </div>
+                </div>
+            </header>
+            
+            <main class="page-content">
+                <div class="page-header">
+                    <h1 class="page-title">Category Management</h1>
+                    <button class="btn btn-primary" type="button" onclick="openCategoryForm()"><i class="fas fa-plus"></i> Add Category</button>
+                </div>
+                <div class="card">
+                    <div class="table-responsive">
+                        <table>
+                            <thead>
+                                <tr><th>ID</th><th>Name</th><th>Slug</th><th>Products</th><th>Actions</th></tr>
+                            </thead>
+                            <tbody id="categories-tbody">
+                                <tr><td colspan="5">Loading categories...</td></tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </main>
+        </div>
+    </div>
+    <dialog id="category-dialog">
+        <form id="category-form" method="dialog">
+            <h2 id="category-dialog-title">Add Category</h2>
+            <input type="hidden" id="category-id">
+            <label>Name <input id="category-name" required></label>
+            <label>Description <textarea id="category-description"></textarea></label>
+            <div class="modal-footer">
+                <button class="btn btn-secondary" type="button" onclick="document.getElementById('category-dialog').close()">Cancel</button>
+                <button class="btn btn-primary" type="submit">Save Category</button>
+            </div>
+        </form>
+    </dialog>
+    <div id="toast-container" class="toast-container"></div>
+    <script src="/admin/js/admin.js"></script>
+    <script>
+        let categories = [];
+        const escapeHtml = value => String(value ?? '').replace(/[&<>'"]/g, character => ({'&':'&amp;','<':'&lt;','>':'&gt;',"'":'&#39;','"':'&quot;'}[character]));
+
+        async function loadCategories() {
+            try {
+                const res = await api('GET', '/categories');
+                categories = res.data || [];
+                const tbody = document.getElementById('categories-tbody');
+                if (!categories.length) {
+                    tbody.innerHTML = '<tr><td colspan="5">No categories found.</td></tr>';
+                    return;
+                }
+                tbody.innerHTML = categories.map(c => `
+                    <tr>
+                        <td>${c.id}</td>
+                        <td><strong>${escapeHtml(c.name)}</strong></td>
+                        <td>${escapeHtml(c.slug)}</td>
+                        <td>${c.product_count || 0}</td>
+                        <td><button class="btn btn-secondary btn-sm" type="button" onclick="openCategoryForm(${c.id})"><i class="fas fa-edit"></i> Edit</button> <button class="btn btn-danger btn-sm" type="button" onclick="deleteCategory(${c.id})"><i class="fas fa-trash"></i> Delete</button></td>
+                    </tr>
+                `).join('');
+            } catch (e) {
+                document.getElementById('categories-tbody').innerHTML = '<tr><td colspan="5">Failed to load categories.</td></tr>';
+                showToast(e.message, 'error');
+            }
+        }
+
+        function openCategoryForm(id) {
+            const category = categories.find(item => item.id === id);
+            document.getElementById('category-dialog-title').textContent = category ? 'Edit Category' : 'Add Category';
+            document.getElementById('category-id').value = category?.id || '';
+            document.getElementById('category-name').value = category?.name || '';
+            document.getElementById('category-description').value = category?.description || '';
+            document.getElementById('category-dialog').showModal();
+        }
+
+        document.getElementById('category-form').addEventListener('submit', async event => {
+            event.preventDefault();
+            const id = document.getElementById('category-id').value;
+            const body = { name: document.getElementById('category-name').value.trim(), description: document.getElementById('category-description').value.trim() };
+            try {
+                await api(id ? 'PUT' : 'POST', id ? `/categories/${id}` : '/categories', body);
+                document.getElementById('category-dialog').close();
+                showToast('Category saved.', 'success');
+                await loadCategories();
+            } catch (error) { showToast(error.message, 'error'); }
+        });
+
+        async function deleteCategory(id) {
+            if (!window.confirm('Delete this category? Products must be reassigned if it has products.')) return;
+            try { await api('DELETE', `/categories/${id}`, {}); showToast('Category deleted.', 'success'); await loadCategories(); }
+            catch (error) { showToast(error.message, 'error'); }
+        }
+
+        document.addEventListener('DOMContentLoaded', loadCategories);
+    </script>
+</body>
+</html>

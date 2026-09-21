@@ -103,6 +103,13 @@ nav a:hover { color: var(--white); }
     font-weight: 500; font-size: 15px; transition: 0.3s; z-index: 10;
 }
 .add-btn:hover { background: #15271b; }
+.product-actions { display: flex; flex-direction: column; gap: 10px; }
+.buy-btn {
+    background: var(--primary-green); color: var(--white); border: none;
+    padding: 15px; border-radius: 30px; cursor: pointer; width: 100%;
+    font-weight: 500; font-size: 15px; transition: 0.3s; z-index: 10;
+}
+.buy-btn:hover { background: #15271b; }
 
 /* Promises Section */
 .promises-section { padding: 80px 5%; max-width: 1000px; margin: 0 auto; text-align: center; }
@@ -148,6 +155,36 @@ nav a:hover { color: var(--white); }
 .stars { color: var(--accent-gold); margin-bottom: 15px; font-size: 1.4rem; }
 .review-card p { font-style: italic; color: var(--text-gray); font-size: 15px; line-height: 1.6; margin-bottom: 25px; }
 .review-card h4 { font-family: var(--font-heading); color: var(--primary-green); font-size: 1.1rem; font-weight: 600; }
+.contact-section { max-width: 1100px; margin: 0 auto; padding: 80px 5%; display: grid; grid-template-columns: 0.8fr 1.2fr; gap: 60px; align-items: start; }
+.contact-copy .section-title { text-align: left; }
+.contact-copy > p:last-child { color: var(--text-gray); line-height: 1.7; max-width: 380px; }
+.contact-form { background: var(--white); padding: 30px; border-radius: 12px; box-shadow: 0 5px 25px rgba(0,0,0,0.04); }
+.contact-form .form-row { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; }
+.contact-form .form-group { margin-bottom: 15px; display: flex; flex-direction: column; }
+.contact-form label { font-size: 13px; color: var(--text-gray); margin-bottom: 5px; font-weight: 500; }
+.contact-form input, .contact-form textarea { padding: 12px; border: 1px solid #ddd; border-radius: 6px; font: inherit; }
+#contact-status { margin-top: 12px; color: var(--primary-green); min-height: 1.5em; }
+.faq-section { padding: 90px 5%; background: #fcf9f2; display: grid; grid-template-columns: 0.8fr 1.2fr; gap: 70px; }
+.faq-heading .section-title { text-align: left; }
+.faq-heading > p:last-child { color: var(--text-gray); line-height: 1.7; max-width: 360px; }
+.faq-list { max-width: 720px; }
+.faq-item { border-top: 1px solid rgba(34,60,42,0.18); }
+.faq-item:last-child { border-bottom: 1px solid rgba(34,60,42,0.18); }
+.faq-question { width: 100%; border: 0; background: transparent; color: var(--text-dark); display: flex; justify-content: space-between; align-items: center; padding: 22px 0; text-align: left; font: 600 1rem var(--font-body); cursor: pointer; }
+.faq-question span { color: var(--accent-gold); font-size: 1.5rem; font-weight: 400; transition: transform 0.25s; }
+.faq-answer { display: grid; grid-template-rows: 0fr; transition: grid-template-rows 0.25s ease; }
+.faq-answer p { overflow: hidden; margin: 0; color: var(--text-gray); line-height: 1.7; }
+.faq-item.open .faq-answer { grid-template-rows: 1fr; }
+.faq-item.open .faq-answer p { padding: 0 35px 22px 0; }
+.faq-item.open .faq-question span { transform: rotate(45deg); }
+.site-footer { background: #0d2a1c; color: rgba(255,255,255,0.72); padding: 75px 8%; display: grid; grid-template-columns: 1.7fr repeat(3, 1fr); gap: 45px; }
+.footer-logo { display: inline-block; color: #f7f4ea; font: 600 1.7rem var(--font-heading); letter-spacing: 5px; text-decoration: none; margin-bottom: 18px; }
+.footer-brand > p:not(.footer-kicker), .footer-column a, .footer-column span { display: block; color: rgba(255,255,255,0.68); line-height: 1.7; text-decoration: none; margin-bottom: 13px; }
+.footer-kicker { color: var(--accent-gold); font-size: 11px; font-weight: 700; letter-spacing: 3px; margin: 22px 0 18px; }
+.footer-column .footer-kicker { margin-top: 0; }
+.footer-column a:hover, .footer-socials a:hover { color: #fff; }
+.footer-socials { display: flex; gap: 12px; flex-wrap: wrap; }
+.footer-socials a { border: 1px solid rgba(194,154,91,0.6); border-radius: 24px; color: #fff; padding: 10px 16px; text-decoration: none; }
 
 /* Checkout Sidebar & Modals... */
 .checkout-sidebar { 
@@ -240,4 +277,10 @@ nav a:hover { color: var(--white); }
     .hero h1 { font-size: 3.5rem; }
     .hero-actions { flex-direction: column; }
     .promises-grid, .steps-grid { grid-template-columns: 1fr; }
+    .contact-section, .faq-section, .contact-form .form-row { grid-template-columns: 1fr; }
+    .site-footer { grid-template-columns: 1fr 1fr; padding: 60px 8%; }
+}
+
+@media(max-width: 520px) {
+    .site-footer { grid-template-columns: 1fr; }
 }

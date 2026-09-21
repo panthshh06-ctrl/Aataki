@@ -1,0 +1,99 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Offers | Aataki Admin</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Playfair+Display:wght@600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="/admin/css/admin.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+</head>
+<body>
+    <div class="admin-layout">
+        <aside class="sidebar" id="sidebar">
+            <div class="sidebar-header">
+                <h2>Aataki</h2>
+                <button class="close-sidebar" onclick="toggleSidebar()"><i class="fas fa-times"></i></button>
+            </div>
+        </aside>
+        
+        <div class="main-content">
+            <header class="topbar">
+                <div class="topbar-left">
+                    <button class="menu-toggle" onclick="toggleSidebar()"><i class="fas fa-bars"></i></button>
+                    <div class="breadcrumbs"><span>Admin / </span><strong>Offers</strong></div>
+                </div>
+                <div class="topbar-right">
+                    <button onclick="toggleTheme()" class="icon-btn theme-toggle"><i class="fas fa-moon"></i></button>
+                    <div class="admin-profile">
+                        <span id="admin-name">Loading...</span>
+                        <button onclick="logout()" class="icon-btn"><i class="fas fa-sign-out-alt"></i></button>
+                    </div>
+                </div>
+            </header>
+            
+            <main class="page-content">
+                <div class="page-header">
+                    <h1 class="page-title">Offer Management</h1>
+                    <button class="btn btn-primary" type="button" onclick="openOfferForm()"><i class="fas fa-plus"></i> Add Offer</button>
+                </div>
+                <div class="card">
+                    <div class="table-responsive">
+                        <table>
+                            <thead>
+                                <tr><th>Title</th><th>Discount</th><th>Code</th><th>Status</th><th>Valid Until</th><th>Actions</th></tr>
+                            </thead>
+                            <tbody id="offers-tbody">
+                                <tr><td colspan="6">Loading offers...</td></tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </main>
+        </div>
+    </div>
+    <dialog id="offer-dialog"><form id="offer-form" method="dialog">
+        <h2 id="offer-dialog-title">Add Offer</h2><input type="hidden" id="offer-id">
+        <label>Name <input id="offer-name" required></label><label>Description <textarea id="offer-description"></textarea></label>
+        <label>Type <select id="offer-type"><option value="percentage">Percentage</option><option value="fixed">Fixed</option></select></label>
+        <label>Discount <input id="offer-value" type="number" min="0" step="0.01" required></label>
+        <label>Start <input id="offer-start" type="datetime-local"></label><label>End <input id="offer-end" type="datetime-local"></label>
+        <label>Status <select id="offer-status"><option value="draft">Draft</option><option value="scheduled">Scheduled</option><option value="active">Active</option></select></label>
+        <div class="modal-footer"><button class="btn btn-secondary" type="button" onclick="document.getElementById('offer-dialog').close()">Cancel</button><button class="btn btn-primary" type="submit">Save Offer</button></div>
+    </form></dialog>
+    <div id="toast-container" class="toast-container"></div>
+    <script src="/admin/js/admin.js"></script>
+    <script>
+        let offers = [];
+        const escapeHtml = value => String(value ?? '').replace(/[&<>'"]/g, character => ({'&':'&amp;','<':'&lt;','>':'&gt;',"'":'&#39;','"':'&quot;'}[character]));
+        async function loadOffers() {
+            try {
+                const res = await api('GET', '/offers');
+                offers = res.data || [];
+                const tbody = document.getElementById('offers-tbody');
+                if (!offers.length) {
+                    tbody.innerHTML = '<tr><td colspan="6">No offers found.</td></tr>';
+                    return;
+                }
+                tbody.innerHTML = offers.map(o => `
+                    <tr>
+                        <td><strong>${escapeHtml(o.title || o.name)}</strong></td>
+                        <td>${o.discount_value}${o.discount_type === 'percentage' ? '%' : ' ₹'}</td>
+                        <td><code>${o.promo_code || 'N/A'}</code></td>
+                        <td><span class="badge badge-success">${o.status}</span></td>
+                        <td>${formatDate(o.end_date)}</td>
+                        <td><button class="btn btn-secondary btn-sm" type="button" onclick="openOfferForm(${o.id})"><i class="fas fa-edit"></i> Edit</button> <button class="btn btn-primary btn-sm" type="button" onclick="activateOffer(${o.id})">Activate</button></td>
+                    </tr>
+                `).join('');
+            } catch (e) {
+                document.getElementById('offers-tbody').innerHTML = '<tr><td colspan="6">Failed to load offers.</td></tr>';
+                showToast(e.message, 'error');
+            }
+        }
+        function openOfferForm(id) { const offer = offers.find(item => item.id === id); document.getElementById('offer-dialog-title').textContent = offer ? 'Edit Offer' : 'Add Offer'; document.getElementById('offer-id').value = offer?.id || ''; document.getElementById('offer-name').value = offer?.name || offer?.title || ''; document.getElementById('offer-description').value = offer?.description || ''; document.getElementById('offer-type').value = offer?.discount_type || 'percentage'; document.getElementById('offer-value').value = offer?.discount_value || ''; document.getElementById('offer-start').value = offer?.start_date?.replace(' ', 'T') || ''; document.getElementById('offer-end').value = offer?.end_date?.replace(' ', 'T') || ''; document.getElementById('offer-status').value = offer?.status || 'draft'; document.getElementById('offer-dialog').showModal(); }
+        document.getElementById('offer-form').addEventListener('submit', async event => { event.preventDefault(); const id = document.getElementById('offer-id').value; const body = { name: document.getElementById('offer-name').value.trim(), title: document.getElementById('offer-name').value.trim(), description: document.getElementById('offer-description').value.trim(), discount_type: document.getElementById('offer-type').value, discount_value: Number(document.getElementById('offer-value').value), start_date: document.getElementById('offer-start').value, end_date: document.getElementById('offer-end').value, status: document.getElementById('offer-status').value, is_global: true }; try { await api(id ? 'PUT' : 'POST', id ? `/offers/${id}` : '/offers', body); document.getElementById('offer-dialog').close(); showToast('Offer saved.', 'success'); await loadOffers(); } catch (error) { showToast(error.message, 'error'); } });
+        async function activateOffer(id) { try { await api('POST', `/offers/${id}/activate`); showToast('Offer activated.', 'success'); await loadOffers(); } catch (error) { showToast(error.message, 'error'); } }
+        document.addEventListener('DOMContentLoaded', loadOffers);
+    </script>
+</body>
+</html>

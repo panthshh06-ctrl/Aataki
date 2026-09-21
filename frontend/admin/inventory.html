@@ -1,0 +1,82 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Inventory | Aataki Admin</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Playfair+Display:wght@600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="/admin/css/admin.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+</head>
+<body>
+    <div class="admin-layout">
+        <aside class="sidebar" id="sidebar">
+            <div class="sidebar-header">
+                <h2>Aataki</h2>
+                <button class="close-sidebar" onclick="toggleSidebar()"><i class="fas fa-times"></i></button>
+            </div>
+        </aside>
+        
+        <div class="main-content">
+            <header class="topbar">
+                <div class="topbar-left">
+                    <button class="menu-toggle" onclick="toggleSidebar()"><i class="fas fa-bars"></i></button>
+                    <div class="breadcrumbs"><span>Admin / </span><strong>Inventory</strong></div>
+                </div>
+                <div class="topbar-right">
+                    <button onclick="toggleTheme()" class="icon-btn theme-toggle"><i class="fas fa-moon"></i></button>
+                    <div class="admin-profile">
+                        <span id="admin-name">Loading...</span>
+                        <button onclick="logout()" class="icon-btn"><i class="fas fa-sign-out-alt"></i></button>
+                    </div>
+                </div>
+            </header>
+            
+            <main class="page-content">
+                <div class="page-header">
+                    <h1 class="page-title">Inventory Management</h1>
+                </div>
+                <div class="card">
+                    <div class="table-responsive">
+                        <table>
+                            <thead>
+                                <tr><th>Product</th><th>SKU</th><th>Stock</th><th>Status</th><th>Action</th></tr>
+                            </thead>
+                            <tbody id="inventory-tbody">
+                                <tr><td colspan="5">Loading inventory...</td></tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </main>
+        </div>
+    </div>
+    <div id="toast-container" class="toast-container"></div>
+    <script src="/admin/js/admin.js"></script>
+    <script>
+        async function loadInventory() {
+            try {
+                const res = await api('GET', '/inventory');
+                const tbody = document.getElementById('inventory-tbody');
+                if (!res.data || res.data.length === 0) {
+                    tbody.innerHTML = '<tr><td colspan="5">No items found.</td></tr>';
+                    return;
+                }
+                tbody.innerHTML = res.data.map(i => `
+                    <tr>
+                        <td>${i.name}</td>
+                        <td>${i.sku || 'N/A'}</td>
+                        <td><strong>${i.stock_quantity}</strong></td>
+                        <td><span class="badge ${i.inventory_status === 'IN_STOCK' ? 'badge-success' : 'badge-danger'}">${i.inventory_status}</span></td><td><button class="btn btn-secondary btn-sm" onclick="adjustStock(${i.id},'increase')">+ Stock</button> <button class="btn btn-secondary btn-sm" onclick="adjustStock(${i.id},'decrease')">- Stock</button></td>
+                    </tr>
+                `).join('');
+            } catch (e) {
+                document.getElementById('inventory-tbody').innerHTML = '<tr><td colspan="5">Failed to load inventory.</td></tr>';
+                showToast(e.message, 'error');
+            }
+        }
+        async function adjustStock(id, action) { const amount = Number(window.prompt('Quantity to adjust', '1')); if (!Number.isInteger(amount) || amount < 1) { return; } try { await api('PUT', `/inventory/${id}`, { action, amount, reason: 'Admin dashboard adjustment' }); showToast('Inventory updated.', 'success'); await loadInventory(); } catch (error) { showToast(error.message, 'error'); } }
+        document.addEventListener('DOMContentLoaded', loadInventory);
+    </script>
+</body>
+</html>

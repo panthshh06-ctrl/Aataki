@@ -1,0 +1,143 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Products | Aataki Admin</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Playfair+Display:wght@600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="/admin/css/admin.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+</head>
+<body>
+    <div class="admin-layout">
+        <aside class="sidebar" id="sidebar">
+            <div class="sidebar-header">
+                <h2>Aataki</h2>
+                <button class="close-sidebar" onclick="toggleSidebar()"><i class="fas fa-times"></i></button>
+            </div>
+        </aside>
+        
+        <div class="main-content">
+            <header class="topbar">
+                <div class="topbar-left">
+                    <button class="menu-toggle" onclick="toggleSidebar()"><i class="fas fa-bars"></i></button>
+                    <div class="breadcrumbs"><span>Admin / </span><strong>Products</strong></div>
+                </div>
+                <div class="topbar-right">
+                    <button onclick="toggleTheme()" class="icon-btn theme-toggle"><i class="fas fa-moon"></i></button>
+                    <div class="admin-profile">
+                        <span id="admin-name">Loading...</span>
+                        <button onclick="logout()" class="icon-btn"><i class="fas fa-sign-out-alt"></i></button>
+                    </div>
+                </div>
+            </header>
+            
+            <main class="page-content">
+                <div class="page-header">
+                    <h1 class="page-title">Products Management</h1>
+                    <button class="btn btn-primary" type="button" onclick="openProductForm()"><i class="fas fa-plus"></i> Add Product</button>
+                </div>
+                <div class="card">
+                    <div class="table-responsive">
+                        <table>
+                            <thead>
+                                <tr><th>ID</th><th>Name</th><th>SKU</th><th>Price</th><th>Stock</th><th>Status</th><th>Actions</th></tr>
+                            </thead>
+                            <tbody id="products-tbody">
+                                <tr><td colspan="7">Loading products...</td></tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </main>
+        </div>
+    </div>
+    <dialog id="product-dialog">
+        <form id="product-form" method="dialog" enctype="multipart/form-data">
+            <h2 id="product-dialog-title">Add Product</h2>
+            <input type="hidden" id="product-id">
+            <label>Name <input id="product-name" name="name" required></label>
+            <label>SKU <input id="product-sku" name="sku" required></label>
+            <label>Price <input id="product-price" name="price" type="number" min="0.01" step="0.01" required></label>
+            <label>Stock <input id="product-stock" name="stock_quantity" type="number" min="0" step="1" required></label>
+            <label>Category <select id="product-category" name="category_id"><option value="">Uncategorized</option></select></label>
+            <label>Description <textarea id="product-description" name="description"></textarea></label>
+            <label>Image <input id="product-image" name="image" type="file" accept="image/jpeg,image/png,image/webp"></label>
+            <label><input id="product-active" name="is_active" type="checkbox" checked> Active</label>
+            <div class="modal-footer">
+                <button class="btn btn-secondary" type="button" onclick="document.getElementById('product-dialog').close()">Cancel</button>
+                <button class="btn btn-primary" type="submit">Save Product</button>
+            </div>
+        </form>
+    </dialog>
+    <div id="toast-container" class="toast-container"></div>
+    <script src="/admin/js/admin.js"></script>
+    <script>
+        let products = [];
+        const escapeHtml = value => String(value ?? '').replace(/[&<>'"]/g, character => ({'&':'&amp;','<':'&lt;','>':'&gt;',"'":'&#39;','"':'&quot;'}[character]));
+
+        async function loadProducts() {
+            try {
+                const [res, categories] = await Promise.all([api('GET', '/products'), api('GET', '/categories')]);
+                products = res.data || [];
+                document.getElementById('product-category').innerHTML = '<option value="">Uncategorized</option>' + (categories.data || []).map(category => `<option value="${category.id}">${escapeHtml(category.name)}</option>`).join('');
+                const tbody = document.getElementById('products-tbody');
+                if (!products.length) {
+                    tbody.innerHTML = '<tr><td colspan="7">No products found.</td></tr>';
+                    return;
+                }
+                tbody.innerHTML = products.map(p => `
+                    <tr>
+                        <td>${p.id}</td>
+                        <td>${escapeHtml(p.name)}</td>
+                        <td>${escapeHtml(p.sku || 'N/A')}</td>
+                        <td>${formatCurrency(p.price)}</td>
+                        <td>${p.stock_quantity}</td>
+                        <td><span class="badge ${p.is_active ? 'badge-success' : 'badge-danger'}">${p.is_active ? 'Active' : 'Inactive'}</span></td>
+                        <td><button class="btn btn-secondary btn-sm" type="button" onclick="openProductForm(${p.id})"><i class="fas fa-edit"></i> Edit</button> <button class="btn btn-danger btn-sm" type="button" onclick="deleteProduct(${p.id})"><i class="fas fa-trash"></i> Delete</button></td>
+                    </tr>
+                `).join('');
+            } catch (e) {
+                document.getElementById('products-tbody').innerHTML = '<tr><td colspan="7">Failed to load products.</td></tr>';
+                showToast(e.message, 'error');
+            }
+        }
+
+        function openProductForm(id) {
+            const product = products.find(item => item.id === id);
+            document.getElementById('product-dialog-title').textContent = product ? 'Edit Product' : 'Add Product';
+            document.getElementById('product-id').value = product?.id || '';
+            document.getElementById('product-name').value = product?.name || '';
+            document.getElementById('product-sku').value = product?.sku || '';
+            document.getElementById('product-price').value = product?.price || '';
+            document.getElementById('product-stock').value = product?.stock_quantity ?? '';
+            document.getElementById('product-category').value = product?.category_id || '';
+            document.getElementById('product-description').value = product?.description || '';
+            document.getElementById('product-active').checked = product ? Boolean(product.is_active) : true;
+            document.getElementById('product-image').value = '';
+            document.getElementById('product-dialog').showModal();
+        }
+
+        document.getElementById('product-form').addEventListener('submit', async event => {
+            event.preventDefault();
+            const formData = new FormData(event.currentTarget);
+            formData.set('is_active', document.getElementById('product-active').checked ? '1' : '0');
+            const id = document.getElementById('product-id').value;
+            try {
+                await api(id ? 'PUT' : 'POST', id ? `/products/${id}` : '/products', formData);
+                document.getElementById('product-dialog').close();
+                showToast('Product saved.', 'success');
+                await loadProducts();
+            } catch (error) { showToast(error.message, 'error'); }
+        });
+
+        async function deleteProduct(id) {
+            if (!window.confirm('Delete this product?')) return;
+            try { await api('DELETE', `/products/${id}`); showToast('Product deleted.', 'success'); await loadProducts(); }
+            catch (error) { showToast(error.message, 'error'); }
+        }
+
+        document.addEventListener('DOMContentLoaded', loadProducts);
+    </script>
+</body>
+</html>

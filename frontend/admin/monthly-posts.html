@@ -1,0 +1,96 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Monthly Posts | Aataki Admin</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Playfair+Display:wght@600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="/admin/css/admin.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+</head>
+<body>
+    <div class="admin-layout">
+        <aside class="sidebar" id="sidebar">
+            <div class="sidebar-header">
+                <h2>Aataki</h2>
+                <button class="close-sidebar" onclick="toggleSidebar()"><i class="fas fa-times"></i></button>
+            </div>
+        </aside>
+        
+        <div class="main-content">
+            <header class="topbar">
+                <div class="topbar-left">
+                    <button class="menu-toggle" onclick="toggleSidebar()"><i class="fas fa-bars"></i></button>
+                    <div class="breadcrumbs"><span>Admin / </span><strong>Monthly Posts</strong></div>
+                </div>
+                <div class="topbar-right">
+                    <button onclick="toggleTheme()" class="icon-btn theme-toggle"><i class="fas fa-moon"></i></button>
+                    <div class="admin-profile">
+                        <span id="admin-name">Loading...</span>
+                        <button onclick="logout()" class="icon-btn"><i class="fas fa-sign-out-alt"></i></button>
+                    </div>
+                </div>
+            </header>
+            
+            <main class="page-content">
+                <div class="page-header">
+                    <h1 class="page-title">Monthly Posts</h1>
+                    <button class="btn btn-primary" type="button" onclick="openPostForm()"><i class="fas fa-plus"></i> Add Post</button>
+                </div>
+                <div class="card">
+                    <div class="table-responsive">
+                        <table>
+                            <thead>
+                                <tr><th>Title</th><th>Target Month</th><th>Status</th><th>Published Date</th><th>Actions</th></tr>
+                            </thead>
+                            <tbody id="posts-tbody">
+                                <tr><td colspan="5">Loading posts...</td></tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </main>
+        </div>
+    </div>
+    <dialog id="post-dialog"><form id="post-form" method="dialog">
+        <h2 id="post-dialog-title">Add Monthly Post</h2><input type="hidden" id="post-id">
+        <label>Title <input id="post-title" required></label><label>Content <textarea id="post-content" required></textarea></label>
+        <label>Target Month <input id="post-month" placeholder="September 2026" required></label><label>Publish Date <input id="post-date" type="datetime-local"></label>
+        <label>Status <select id="post-status"><option value="draft">Draft</option><option value="scheduled">Scheduled</option><option value="published">Published</option></select></label>
+        <div class="modal-footer"><button class="btn btn-secondary" type="button" onclick="document.getElementById('post-dialog').close()">Cancel</button><button class="btn btn-primary" type="submit">Save Post</button></div>
+    </form></dialog>
+    <div id="toast-container" class="toast-container"></div>
+    <script src="/admin/js/admin.js"></script>
+    <script>
+        let posts = [];
+        const escapeHtml = value => String(value ?? '').replace(/[&<>'"]/g, character => ({'&':'&amp;','<':'&lt;','>':'&gt;',"'":'&#39;','"':'&quot;'}[character]));
+        async function loadPosts() {
+            try {
+                const res = await api('GET', '/monthly-posts');
+                posts = res.data || [];
+                const tbody = document.getElementById('posts-tbody');
+                if (!posts.length) {
+                    tbody.innerHTML = '<tr><td colspan="5">No posts found.</td></tr>';
+                    return;
+                }
+                tbody.innerHTML = posts.map(p => `
+                    <tr>
+                        <td><strong>${escapeHtml(p.title)}</strong></td>
+                        <td>${p.target_month || 'N/A'}</td>
+                        <td><span class="badge badge-info">${p.status}</span></td>
+                        <td>${formatDate(p.publish_date)}</td>
+                        <td><button class="btn btn-secondary btn-sm" type="button" onclick="openPostForm(${p.id})"><i class="fas fa-edit"></i> Edit</button> <button class="btn btn-primary btn-sm" type="button" onclick="publishPost(${p.id})">Publish</button></td>
+                    </tr>
+                `).join('');
+            } catch (e) {
+                document.getElementById('posts-tbody').innerHTML = '<tr><td colspan="5">Failed to load posts.</td></tr>';
+                showToast(e.message, 'error');
+            }
+        }
+        function openPostForm(id) { const post = posts.find(item => item.id === id); document.getElementById('post-dialog-title').textContent = post ? 'Edit Monthly Post' : 'Add Monthly Post'; document.getElementById('post-id').value = post?.id || ''; document.getElementById('post-title').value = post?.title || ''; document.getElementById('post-content').value = post?.content || ''; document.getElementById('post-month').value = post?.target_month || ''; document.getElementById('post-date').value = post?.publish_date?.replace(' ', 'T') || ''; document.getElementById('post-status').value = post?.status || 'draft'; document.getElementById('post-dialog').showModal(); }
+        document.getElementById('post-form').addEventListener('submit', async event => { event.preventDefault(); const id = document.getElementById('post-id').value; const body = { title: document.getElementById('post-title').value.trim(), content: document.getElementById('post-content').value.trim(), target_month: document.getElementById('post-month').value.trim(), publish_date: document.getElementById('post-date').value, status: document.getElementById('post-status').value }; try { await api(id ? 'PUT' : 'POST', id ? `/monthly-posts/${id}` : '/monthly-posts', body); document.getElementById('post-dialog').close(); showToast('Post saved.', 'success'); await loadPosts(); } catch (error) { showToast(error.message, 'error'); } });
+        async function publishPost(id) { try { await api('POST', `/monthly-posts/${id}/publish`); showToast('Post published.', 'success'); await loadPosts(); } catch (error) { showToast(error.message, 'error'); } }
+        document.addEventListener('DOMContentLoaded', loadPosts);
+    </script>
+</body>
+</html>

@@ -1,0 +1,47 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Messages | Aataki Admin</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Playfair+Display:wght@600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="/admin/css/admin.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+</head>
+<body>
+    <div class="admin-layout">
+        <aside class="sidebar" id="sidebar">
+            <div class="sidebar-header"><h2>Aataki</h2><button class="close-sidebar" onclick="toggleSidebar()"><i class="fas fa-times"></i></button></div>
+        </aside>
+        <div class="main-content">
+            <header class="topbar">
+                <div class="topbar-left"><button class="menu-toggle" onclick="toggleSidebar()"><i class="fas fa-bars"></i></button><div class="breadcrumbs"><span>Admin / </span><strong>Messages</strong></div></div>
+                <div class="topbar-right"><button onclick="toggleTheme()" class="icon-btn theme-toggle"><i class="fas fa-moon"></i></button><div class="admin-profile"><span id="admin-name">Loading...</span><button onclick="logout()" class="icon-btn"><i class="fas fa-sign-out-alt"></i></button></div></div>
+            </header>
+            <main class="page-content">
+                <div class="page-header"><h1 class="page-title">Contact Messages</h1><select id="message-status" class="form-control" style="width:auto"><option value="">All messages</option><option value="new">New</option><option value="read">Read</option><option value="resolved">Resolved</option></select></div>
+                <div class="card"><div class="table-responsive"><table><thead><tr><th>Date</th><th>Customer</th><th>Contact</th><th>Message</th><th>Status</th><th>Action</th></tr></thead><tbody id="messages-tbody"><tr><td colspan="6">Loading messages...</td></tr></tbody></table></div></div>
+            </main>
+        </div>
+    </div>
+    <div id="toast-container" class="toast-container"></div>
+    <script src="/admin/js/admin.js"></script>
+    <script>
+        let messages = [];
+        const escapeHtml = value => String(value ?? '').replace(/[&<>\'"]/g, character => ({'&':'&amp;','<':'&lt;','>':'&gt;',"'":'&#39;','"':'&quot;'}[character]));
+        async function loadMessages() {
+            try {
+                const query = document.getElementById('message-status').value;
+                const result = await api('GET', `/messages${query ? `?status=${encodeURIComponent(query)}` : ''}`);
+                messages = result.data || [];
+                const tbody = document.getElementById('messages-tbody');
+                if (!messages.length) { tbody.innerHTML = '<tr><td colspan="6">No messages found.</td></tr>'; return; }
+                tbody.innerHTML = messages.map(message => `<tr><td>${formatDateTime(message.created_at)}</td><td><strong>${escapeHtml(message.name)}</strong></td><td>${escapeHtml(message.email)}<br>${escapeHtml(message.phone)}</td><td>${escapeHtml(message.message)}</td><td><span class="badge ${message.status === 'new' ? 'badge-warning' : message.status === 'resolved' ? 'badge-success' : 'badge-info'}">${message.status}</span></td><td><select onchange="updateMessageStatus(${message.id}, this.value)"><option value="">Change</option><option value="new">New</option><option value="read">Read</option><option value="resolved">Resolved</option></select></td></tr>`).join('');
+            } catch (error) { document.getElementById('messages-tbody').innerHTML = '<tr><td colspan="6">Failed to load messages.</td></tr>'; showToast(error.message, 'error'); }
+        }
+        async function updateMessageStatus(id, status) { if (!status) return; try { await api('PUT', `/messages/${id}/status`, { status }); showToast('Message status updated.', 'success'); await loadMessages(); } catch (error) { showToast(error.message, 'error'); } }
+        document.getElementById('message-status').addEventListener('change', loadMessages);
+        document.addEventListener('DOMContentLoaded', loadMessages);
+    </script>
+</body>
+</html>

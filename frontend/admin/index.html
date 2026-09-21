@@ -1,0 +1,99 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dashboard | Aataki Admin</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Playfair+Display:wght@600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="/admin/css/admin.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+</head>
+<body>
+    <div class="admin-layout">
+        <aside class="sidebar" id="sidebar">
+            <div class="sidebar-header">
+                <h2>Aataki</h2>
+                <button class="close-sidebar" onclick="toggleSidebar()"><i class="fas fa-times"></i></button>
+            </div>
+            <!-- Nav injected by admin.js -->
+        </aside>
+        
+        <div class="main-content">
+            <header class="topbar">
+                <div class="topbar-left">
+                    <button class="menu-toggle" onclick="toggleSidebar()"><i class="fas fa-bars"></i></button>
+                    <div class="breadcrumbs" id="breadcrumbs">
+                        <span style="color: var(--text-gray);">Admin / </span>
+                        <strong style="color: var(--text-dark);">Dashboard</strong>
+                    </div>
+                </div>
+                <div class="topbar-right">
+                    <button onclick="toggleTheme()" class="icon-btn theme-toggle"><i class="fas fa-moon"></i></button>
+                    <div class="admin-profile">
+                        <span id="admin-name">Loading...</span>
+                        <button onclick="logout()" class="icon-btn"><i class="fas fa-sign-out-alt"></i></button>
+                    </div>
+                </div>
+            </header>
+            
+            <main class="page-content">
+                <div class="page-header">
+                    <h1 class="page-title">Dashboard</h1>
+                </div>
+                
+                <div class="stat-grid">
+                    <div class="card stat-card"><div class="stat-icon"><i class="fas fa-rupee-sign"></i></div><div class="stat-details"><h3>Total Revenue</h3><p id="stat-revenue">...</p></div></div>
+                    <div class="card stat-card"><div class="stat-icon"><i class="fas fa-shopping-cart"></i></div><div class="stat-details"><h3>Total Orders</h3><p id="stat-orders">...</p></div></div>
+                    <div class="card stat-card"><div class="stat-icon"><i class="fas fa-users"></i></div><div class="stat-details"><h3>Total Customers</h3><p id="stat-customers">...</p></div></div>
+                    <div class="card stat-card"><div class="stat-icon"><i class="fas fa-box"></i></div><div class="stat-details"><h3>Total Products</h3><p id="stat-products">...</p></div></div>
+                    <div class="card stat-card"><div class="stat-icon"><i class="fas fa-ticket-alt"></i></div><div class="stat-details"><h3>Active Offers</h3><p id="stat-offers">...</p></div></div>
+                    <div class="card stat-card"><div class="stat-icon"><i class="fas fa-exclamation-triangle"></i></div><div class="stat-details"><h3>Low Stock</h3><p id="stat-low-stock">...</p></div></div>
+                </div>
+
+                <div class="card">
+                    <div style="display: flex; justify-content: space-between; margin-bottom: 1rem;">
+                        <h3>Sales Overview</h3>
+                        <select id="period-selector" class="form-control" style="width: auto;" onchange="loadDashboardData()">
+                            <option value="today">Today</option>
+                            <option value="7days">7 Days</option>
+                            <option value="30days" selected>30 Days</option>
+                            <option value="12months">12 Months</option>
+                        </select>
+                    </div>
+                    <canvas id="salesChart" height="100"></canvas>
+                </div>
+                
+                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1.5rem;">
+                    <div class="card">
+                        <h3>Recent Orders</h3>
+                        <div class="table-responsive">
+                            <table>
+                                <thead>
+                                    <tr><th>Order ID</th><th>Customer</th><th>Amount</th><th>Status</th></tr>
+                                </thead>
+                                <tbody id="recent-orders-body"></tbody>
+                            </table>
+                        </div>
+                    </div>
+                    
+                    <div class="card">
+                        <h3>Low Stock Products</h3>
+                        <div class="table-responsive">
+                            <table>
+                                <thead>
+                                    <tr><th>Product</th><th>SKU</th><th>Stock</th><th>Action</th></tr>
+                                </thead>
+                                <tbody id="low-stock-body"></tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </main>
+        </div>
+    </div>
+
+    <script src="/admin/js/admin.js"></script>
+    <script src="/admin/js/pages/index.js"></script>
+</body>
+</html>

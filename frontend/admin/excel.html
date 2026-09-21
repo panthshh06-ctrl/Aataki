@@ -1,0 +1,108 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Excel Management | Aataki Admin</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Playfair+Display:wght@600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="/admin/css/admin.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+</head>
+<body>
+    <div class="admin-layout">
+        <aside class="sidebar" id="sidebar">
+            <div class="sidebar-header">
+                <h2>Aataki</h2>
+                <button class="close-sidebar" onclick="toggleSidebar()"><i class="fas fa-times"></i></button>
+            </div>
+        </aside>
+        
+        <div class="main-content">
+            <header class="topbar">
+                <div class="topbar-left">
+                    <button class="menu-toggle" onclick="toggleSidebar()"><i class="fas fa-bars"></i></button>
+                    <div class="breadcrumbs"><span>Admin / </span><strong>Excel Management</strong></div>
+                </div>
+                <div class="topbar-right">
+                    <button onclick="toggleTheme()" class="icon-btn theme-toggle"><i class="fas fa-moon"></i></button>
+                    <div class="admin-profile">
+                        <span id="admin-name">Loading...</span>
+                        <button onclick="logout()" class="icon-btn"><i class="fas fa-sign-out-alt"></i></button>
+                    </div>
+                </div>
+            </header>
+            
+            <main class="page-content">
+                <div class="page-header">
+                    <h1 class="page-title">Excel Import / Export Center</h1>
+                </div>
+
+                <div class="card">
+                    <h3>Export Data to Excel</h3>
+                    <p style="color: var(--text-gray); margin-bottom: 1.5rem;">Download database snapshots formatted professionally with auto-filters and frozen headers.</p>
+                    <div style="display: flex; gap: 1rem; flex-wrap: wrap;">
+                        <a href="/api/admin/excel/export/everything" class="btn btn-primary"><i class="fas fa-file-excel"></i> Export Everything (.xlsx)</a>
+                        <a href="/api/admin/excel/export/products" class="btn btn-secondary"><i class="fas fa-box"></i> Export Products</a>
+                        <a href="/api/admin/excel/export/orders" class="btn btn-secondary"><i class="fas fa-shopping-cart"></i> Export Orders</a>
+                        <a href="/api/admin/excel/export/users" class="btn btn-secondary"><i class="fas fa-users"></i> Export Customers</a>
+                        <a href="/api/admin/excel/export/offers" class="btn btn-secondary"><i class="fas fa-ticket-alt"></i> Export Offers</a>
+                    </div>
+                </div>
+
+                <div class="card">
+                    <h3>Import Data from Excel</h3>
+                    <p style="color: var(--text-gray); margin-bottom: 1.5rem;">Upload valid .xlsx files to import records safely.</p>
+                    <div class="dropzone" onclick="document.getElementById('import-file').click()">
+                        <i class="fas fa-cloud-upload-alt"></i>
+                        <p>Click to select an Excel (.xlsx) file to upload</p>
+                        <input type="file" id="import-file" class="dropzone-input" accept=".xlsx" onchange="handleFileSelect(event)">
+                    </div>
+                    <div id="file-info" style="margin-top: 1rem; display: none;">
+                        <span id="file-name" style="font-weight: 600;"></span>
+                        <button class="btn btn-primary btn-sm" style="margin-left: 1rem;" onclick="uploadFile()">Validate & Upload</button>
+                    </div>
+                </div>
+            </main>
+        </div>
+    </div>
+    <div id="toast-container" class="toast-container"></div>
+    <script src="/admin/js/admin.js"></script>
+    <script>
+        let selectedFile = null;
+        function handleFileSelect(e) {
+            if (e.target.files.length > 0) {
+                selectedFile = e.target.files[0];
+                document.getElementById('file-name').textContent = selectedFile.name;
+                document.getElementById('file-info').style.display = 'block';
+            }
+        }
+        function uploadFile() {
+            if (!selectedFile) return;
+            const type = window.prompt('Import type: products, categories, offers, or inventory');
+            if (!['products', 'categories', 'offers', 'inventory'].includes(type)) {
+                showToast('Choose a supported import type.', 'error');
+                return;
+            }
+            const form = new FormData();
+            form.append('file', selectedFile);
+            fetch(`/api/admin/excel/import/${type}`, { method: 'POST', body: form })
+                .then(response => response.json().then(data => ({ response, data })))
+                .then(({ response, data }) => {
+                    if (!response.ok) throw new Error(data.error || 'Validation failed');
+                    const confirmed = window.confirm(`Validated ${data.data.count} rows. Preview first rows in the console. Import now?`);
+                    if (!confirmed) return;
+                    return fetch('/api/admin/excel/import/confirm', {
+                        method: 'POST', headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ token: data.data.token })
+                    });
+                })
+                .then(response => response && response.json())
+                .then(data => {
+                    if (data?.error) throw new Error(data.error);
+                    if (data) showToast(`Imported ${data.data.count} rows.`, 'success');
+                })
+                .catch(error => showToast(error.message, 'error'));
+        }
+    </script>
+</body>
+</html>

@@ -6,3 +6,6 @@ yarn-error.log*
 .env.local
 .DS_Store
 Thumbs.db
+*.db
+*.db-shm
+*.db-wal

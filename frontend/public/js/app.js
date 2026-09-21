@@ -1,11 +1,5 @@
 
-// Updated Product Database to use the provided image
-const products = [
-    { id: 1, name: "Aataki Premium", desc: "Stone-ground from selective Sehore Sharbati — our most premium variant.", price: 65, oldPrice: 73, badge: "PREMIUM", image: "assets/image_68e37c.jpg" },
-    { id: 2, name: "Aataki Gold", desc: "Made with premium MP Sharbati wheat.", price: 55, oldPrice: 60, badge: "SHARBATI", image: "assets/image_68e37c.jpg" },
-    { id: 3, name: "Aataki Classic", desc: "Made with selective Lokwan wheat of MP.", price: 45, oldPrice: 48, badge: "", image: "assets/image_68e37c.jpg" },
-    { id: 4, name: "Aataki Regular", desc: "Budget-friendly atta, made with whole wheat.", price: 36, oldPrice: 40, badge: "BEST VALUE", image: "assets/image_68e37c.jpg" }
-];
+let products = [];
 
 let cart = [];
 let cartTotalAmount = 0;
@@ -58,21 +52,45 @@ function renderProducts() {
                 </div>
                 <div class="card-content">
                     <h3>${product.name}</h3>
-                    <p>${product.desc}</p>
+                    <p>${product.description || ''}</p>
                     <div class="price-block">
                         <span class="price-current">&#8377;${product.price}</span>
                         <span class="price-unit">/ kg</span>
                         ${oldPriceHtml}
                     </div>
-                    <button class="add-btn" onclick="addToCart(${product.id})">Add to Order</button>
+                    <div class="product-actions">
+                        <button class="add-btn" data-action="add-to-cart" data-product-id="${product.id}" type="button">Add to Order</button>
+                        <button class="buy-btn" data-action="buy-now" data-product-id="${product.id}" type="button">Buy Now</button>
+                    </div>
                 </div>
             </div>
         `;
     });
 }
 
+async function loadProducts() {
+    const productList = document.getElementById('product-list');
+    try {
+        const response = await fetch('/api/products');
+        const payload = await response.json();
+        if (!response.ok) throw new Error(payload.error || 'Products could not be loaded');
+        products = (payload.data || []).map(product => ({
+            ...product,
+            desc: product.description,
+            oldPrice: product.original_price,
+            image: product.image_url || 'assets/image_68e37c.jpg',
+            badge: product.discount > 0 ? `${product.discount}% OFF` : ''
+        }));
+        renderProducts();
+    } catch (error) {
+        productList.innerHTML = `<p class="empty-cart">${error.message}</p>`;
+        console.error(error);
+    }
+}
+
 function addToCart(productId) {
     const product = products.find(p => p.id === productId);
+    if (!product) return;
     const existingItem = cart.find(item => item.id === productId);
     if (existingItem) existingItem.qty += 1;
     else cart.push({ ...product, qty: 1 });
@@ -124,11 +142,11 @@ function updateCartUI() {
                     </div>
                     <div class="modification-controls">
                         <div class="qty-controls">
-                            <button class="qty-btn" onclick="changeQty(${item.id}, -1)">-</button>
+                            <button class="qty-btn" data-action="change-qty" data-product-id="${item.id}" data-amount="-1" type="button">-</button>
                             <span>${item.qty} kg</span>
-                            <button class="qty-btn" onclick="changeQty(${item.id}, 1)">+</button>
+                            <button class="qty-btn" data-action="change-qty" data-product-id="${item.id}" data-amount="1" type="button">+</button>
                         </div>
-                        <button class="remove-btn" onclick="removeItem(${item.id})">Remove</button>
+                        <button class="remove-btn" data-action="remove-item" data-product-id="${item.id}" type="button">Remove</button>
                     </div>
                 </div>
             `;
@@ -177,6 +195,7 @@ function submitPayment(e) {
         customer: {
             name: document.getElementById('cust-name').value,
             phone: document.getElementById('cust-phone').value,
+            email: document.getElementById('cust-email').value,
             address: document.getElementById('cust-address').value
         },
         items: cart,
@@ -207,4 +226,67 @@ function submitPayment(e) {
     }, 2000); 
 }
 
-renderProducts(); updateCartUI();
+document.addEventListener('click', event => {
+    const actionElement = event.target.closest('[data-action]');
+    if (actionElement) {
+        const productId = Number(actionElement.dataset.productId);
+        if (actionElement.dataset.action === 'add-to-cart') addToCart(productId);
+        if (actionElement.dataset.action === 'buy-now') { addToCart(productId); openPaymentModal(); }
+        if (actionElement.dataset.action === 'change-qty') changeQty(productId, Number(actionElement.dataset.amount));
+        if (actionElement.dataset.action === 'remove-item') removeItem(productId);
+    }
+});
+
+document.getElementById('cart-open-button').addEventListener('click', () => toggleCheckout());
+document.getElementById('cart-close-button').addEventListener('click', () => toggleCheckout());
+document.getElementById('checkout-btn').addEventListener('click', openPaymentModal);
+document.getElementById('backdrop').addEventListener('click', closeAllModals);
+document.getElementById('payment-close-button').addEventListener('click', closeAllModals);
+document.getElementById('success-close-button').addEventListener('click', closeAllModals);
+document.getElementById('payment-form').addEventListener('submit', submitPayment);
+document.getElementById('contact-form').addEventListener('submit', async event => {
+    event.preventDefault();
+    const form = event.currentTarget;
+    const button = form.querySelector('button[type="submit"]');
+    const status = document.getElementById('contact-status');
+    button.disabled = true;
+    status.textContent = 'Sending...';
+    try {
+        const response = await fetch('/api/contact', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+                name: document.getElementById('contact-name').value,
+                email: document.getElementById('contact-email').value,
+                phone: document.getElementById('contact-phone').value,
+                message: document.getElementById('contact-message').value
+            })
+        });
+        const result = await response.json();
+        if (!response.ok) throw new Error(result.error || 'Could not send message');
+        status.textContent = result.message;
+        form.reset();
+    } catch (error) {
+        status.textContent = error.message;
+    } finally {
+        button.disabled = false;
+    }
+});
+
+document.querySelectorAll('.faq-question').forEach(question => {
+    question.addEventListener('click', () => {
+        const item = question.closest('.faq-item');
+        const expanded = question.getAttribute('aria-expanded') === 'true';
+        document.querySelectorAll('.faq-question').forEach(other => {
+            other.setAttribute('aria-expanded', 'false');
+            other.closest('.faq-item').classList.remove('open');
+        });
+        if (!expanded) {
+            question.setAttribute('aria-expanded', 'true');
+            item.classList.add('open');
+        }
+    });
+});
+
+updateCartUI();
+loadProducts();
