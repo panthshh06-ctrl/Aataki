@@ -7,6 +7,9 @@
     "dev": "node backend/server.js",
     "seed": "node backend/database/seed.js"
   },
+  "engines": {
+    "node": ">=18.0.0"
+  },
   "dependencies": {
     "bcryptjs": "^2.4.3",
     "better-sqlite3": "^13.0.3",
