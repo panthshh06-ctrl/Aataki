@@ -44,6 +44,26 @@ header {
 nav { display: flex; gap: 30px; }
 nav a { color: rgba(255,255,255,0.8); text-decoration: none; font-size: 14px; font-weight: 500; transition: color 0.3s; }
 nav a:hover { color: var(--white); }
+
+.nav-dropdown { position: relative; }
+.nav-dropdown-btn {
+    background: none; border: 1px solid rgba(255,255,255,0.4); color: rgba(255,255,255,0.8);
+    padding: 6px 14px; border-radius: 20px; font-size: 14px; font-weight: 500;
+    cursor: pointer; transition: all 0.3s;
+}
+.nav-dropdown-btn:hover { color: var(--white); border-color: var(--white); }
+.nav-dropdown-content {
+    display: none; position: absolute; right: 0; top: calc(100% + 10px);
+    background-color: var(--accent-gold); min-width: 180px;
+    border-radius: 10px; box-shadow: 0 8px 24px rgba(0,0,0,0.25);
+    overflow: hidden; z-index: 200;
+}
+.nav-dropdown-content a {
+    display: block; padding: 12px 18px; color: var(--primary-green);
+    text-decoration: none; font-size: 14px; font-weight: 600; transition: background 0.2s;
+}
+.nav-dropdown-content a:hover { background-color: rgba(255,255,255,0.25); color: var(--white); }
+.nav-dropdown.open .nav-dropdown-content { display: block; }
 .nav-btn { 
     background-color: var(--accent-gold); color: var(--primary-green); 
     border: none; padding: 12px 24px; border-radius: 30px; font-weight: 600; 
